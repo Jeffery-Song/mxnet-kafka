@@ -25,4 +25,4 @@
 	url = https://github.com/dmlc/cub
 [submodule "3rdparty/ps-kafka"]
 	path = 3rdparty/ps-kafka
-	url = https://github.com/gbxu/ps-kafka.git
+	url = git@github.com:Jeffery-Song/ps-kafka.git
