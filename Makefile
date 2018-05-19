@@ -596,5 +596,5 @@ endif
 cmpl:
 	make -j USE_OPENCV=1 USE_BLAS=openblas USE_DIST_KVSTORE=1
 
-cmpl:
+cmplgpu:
 	make -j USE_OPENCV=1 USE_BLAS=openblas USE_DIST_KVSTORE=1 USE_CUDA=1 USE_CUDA_PATH=/usr/local/cuda USE_CUDNN=1
