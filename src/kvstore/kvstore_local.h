@@ -139,6 +139,16 @@ class KVStoreLocal : public KVStore {
 
   void Pull(const std::vector<std::string>& str_keys,
             const std::vector<NDArray*>& values,
+            int priority) override {
+
+    SetKeyType(kStringKey);
+    std::vector<int> keys(str_keys.size());
+    LookupKeys(str_keys, &keys);
+    PullImpl(keys, values, priority);
+  }
+
+  void Pull(const std::vector<std::string>& str_keys,
+            const std::vector<NDArray*>& values,
             int priority, 
   /* ==================================dynamic add worker====================*/
             bool end_of_batch = false) override {

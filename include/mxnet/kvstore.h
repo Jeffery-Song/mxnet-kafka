@@ -186,7 +186,7 @@ class KVStore {
 // =============================dynamic add node==========================================
   virtual void Pull(const std::vector<int>& keys,
                     const std::vector<NDArray*>& values,
-                    int priority = 0,
+                    int priority,
                     bool end_of_batch);
   /*!
    * \brief pull a list of key-value pairs from the store
@@ -196,7 +196,7 @@ class KVStore {
    */
   virtual void Pull(const std::vector<std::string>& str_keys,
                     const std::vector<NDArray*>& values,
-                    int priority = 0,
+                    int priority,
                     bool end_of_batch);
 // =============================dynamic add node==========================================
   /*!

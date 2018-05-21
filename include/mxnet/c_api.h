@@ -1842,6 +1842,7 @@ MXNET_DLL int MXKVStorePushEx(KVStoreHandle handle,
                               const char** keys,
                               NDArrayHandle* vals,
                               int priority);
+
 /*!
  * \brief pull a list of (key, value) pairs from the kvstore
  * \param handle handle to the kvstore
@@ -1855,10 +1856,7 @@ MXNET_DLL int MXKVStorePull(KVStoreHandle handle,
                             mx_uint num,
                             const int* keys,
                             NDArrayHandle* vals,
-                            int priority, 
-/* ==================================dynamic add worker====================*/
-                            bool end_of_batch = false);
-/* ==================================dynamic add worker====================*/
+                            int priority);
 /*!
  * \brief pull a list of (key, value) pairs from the kvstore, where each key is a string
  * \param handle handle to the kvstore
@@ -1872,9 +1870,39 @@ MXNET_DLL int MXKVStorePullEx(KVStoreHandle handle,
                               mx_uint num,
                               const char** keys,
                               NDArrayHandle* vals,
-                              int priority, 
-  /* ==================================dynamic add worker====================*/
-                              bool end_of_batch = false);
+                              int priority);
+
+/* ==================================dynamic add worker====================*/
+/*!
+ * \brief pull a list of (key, value) pairs from the kvstore
+ * \param handle handle to the kvstore
+ * \param num the number of key-value pairs
+ * \param keys the list of keys
+ * \param vals the list of values
+ * \param priority the priority of the action
+ * \return 0 when success, -1 when failure happens
+ */
+// MXNET_DLL int MXKVStorePull_end(KVStoreHandle handle,
+//                             mx_uint num,
+//                             const int* keys,
+//                             NDArrayHandle* vals,
+//                             int priority, 
+//                             bool end_of_batch = false);
+/*!
+ * \brief pull a list of (key, value) pairs from the kvstore, where each key is a string
+ * \param handle handle to the kvstore
+ * \param num the number of key-value pairs
+ * \param keys the list of keys
+ * \param vals the list of values
+ * \param priority the priority of the action
+ * \return 0 when success, -1 when failure happens
+ */
+// MXNET_DLL int MXKVStorePullEx_end(KVStoreHandle handle,
+//                               mx_uint num,
+//                               const char** keys,
+//                               NDArrayHandle* vals,
+//                               int priority, 
+//                               bool end_of_batch = false);
   /* ==================================dynamic add worker====================*/
 
 

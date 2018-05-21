@@ -166,3 +166,7 @@ python/.eggs
 *DartConfiguration.tcl
 tests/Makefile
 tests/mxnet_unit_tests
+
+# for upload
+files
+upload.py

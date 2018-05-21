@@ -854,8 +854,40 @@ int MXKVStorePull(KVStoreHandle handle,
                   mx_uint num,
                   const int* keys,
                   NDArrayHandle* vals,
-                  int priority, 
+                  int priority) {
+  API_BEGIN();
+  std::vector<int> v_keys(num);
+  std::vector<NDArray*> v_vals(num);
+  for (mx_uint i = 0; i < num; ++i) {
+    v_keys[i] = keys[i];
+    v_vals[i] = static_cast<NDArray*>(vals[i]);
+  }
+  static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority);
+  API_END();
+}
+
+int MXKVStorePullEx(KVStoreHandle handle,
+                  mx_uint num,
+                  const char** keys,
+                  NDArrayHandle* vals,
+                  int priority) {
+  API_BEGIN();
+  std::vector<std::string> v_keys(num);
+  std::vector<NDArray*> v_vals(num);
+  for (mx_uint i = 0; i < num; ++i) {
+    v_keys[i] = keys[i];
+    v_vals[i] = static_cast<NDArray*>(vals[i]);
+  }
+  static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority);
+  API_END();
+}
+
   /* ==================================dynamic add worker====================*/
+int MXKVStorePull_end(KVStoreHandle handle,
+                  mx_uint num,
+                  const int* keys,
+                  NDArrayHandle* vals,
+                  int priority, 
                   bool end_of_batch) {
   API_BEGIN();
   std::vector<int> v_keys(num);
@@ -869,16 +901,14 @@ int MXKVStorePull(KVStoreHandle handle,
   } else {
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority);
   }
-  /* ==================================dynamic add worker====================*/
   API_END();
 }
 
-int MXKVStorePullEx(KVStoreHandle handle,
+int MXKVStorePullEx_end(KVStoreHandle handle,
                   mx_uint num,
                   const char** keys,
                   NDArrayHandle* vals,
                   int priority,   
-/* ==================================dynamic add worker====================*/
                   bool end_of_batch) {
   API_BEGIN();
   std::vector<std::string> v_keys(num);
@@ -892,9 +922,9 @@ int MXKVStorePullEx(KVStoreHandle handle,
   } else {
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority);
   }
-/* ==================================dynamic add worker====================*/
   API_END();
 }
+/* ==================================dynamic add worker====================*/
 
 int MXKVStorePullRowSparse(KVStoreHandle handle,
                            mx_uint num,

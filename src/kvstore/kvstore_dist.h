@@ -227,7 +227,7 @@ class KVStoreDist : public KVStoreLocal {
         recv_buf = NDArray(grouped_vals[i][0]->shape(), pinned_ctx_,
                            true, grouped_vals[i][0]->dtype());
       }
-      auto pull_from_servers = [this, key, recv_buf](
+      auto pull_from_servers = [this, key, recv_buf, end_of_batch](
           RunContext rctx, Engine::CallbackOnComplete cb) {
         // convert to ps keys
         size_t size = recv_buf.shape().Size();
