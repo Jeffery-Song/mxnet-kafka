@@ -217,7 +217,10 @@ class KVStoreLocal : public KVStore {
 
   virtual void PullImpl(const std::vector<int>& keys,
                         const std::vector<NDArray*>& values,
-                        int priority) {
+                        int priority,
+  /* ==================================dynamic add worker====================*/
+                        bool end_of_batch = false) {
+  /* ==================================dynamic add worker====================*/
     std::vector<int> uniq_keys;
     std::vector<std::vector<NDArray*> > grouped_vals;
     GroupKVPairsPull(keys, values, &uniq_keys, &grouped_vals);
