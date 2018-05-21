@@ -43,8 +43,11 @@ class KVStore {
   static void Push(int key, const NDArray& val, int priority = 0);
   static void Push(const std::vector<int>& keys,
       const std::vector<NDArray>& vals, int priority = 0);
-  static void Pull(int key, NDArray* out, int priority = 0);
-  static void Pull(const std::vector<int>& keys, std::vector<NDArray>* outs, int priority = 0);
+  /* ==================================dynamic add worker====================*/
+  static void Pull(int key, NDArray* out, int priority = 0, bool end_of_batch = false);
+  static void Pull(const std::vector<int>& keys, std::vector<NDArray>* outs, int priority = 0, bool end_of_batch = false);
+    /* ==================================dynamic add worker====================*/
+
   // TODO(lx): put lr in optimizer or not?
   static void SetOptimizer(std::unique_ptr<Optimizer> optimizer, bool local = false);
   static std::string GetType();

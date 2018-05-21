@@ -117,13 +117,13 @@ inline void KVStore::Push(const std::vector<int>& keys,
   CHECK_EQ(MXKVStorePush(get_kvstore()->get_handle(), keys.size(), keys.data(),
       val_handles.data(), priority), 0);
 }
-
-inline void KVStore::Pull(int key, NDArray* out, int priority) {
+  /* ==================================dynamic add worker====================*/
+inline void KVStore::Pull(int key, NDArray* out, int priority, bool end_of_batch = false) {
   NDArrayHandle out_handle = out->GetHandle();
   CHECK_EQ(MXKVStorePull(get_kvstore()->get_handle(), 1, &key, &out_handle, priority), 0);
 }
 
-inline void KVStore::Pull(const std::vector<int>& keys, std::vector<NDArray>* outs, int priority) {
+inline void KVStore::Pull(const std::vector<int>& keys, std::vector<NDArray>* outs, int priority, bool end_of_batch = false) {
   CHECK_EQ(keys.size(), outs->size());
 
   std::vector<NDArrayHandle> out_handles(keys.size());
@@ -135,7 +135,7 @@ inline void KVStore::Pull(const std::vector<int>& keys, std::vector<NDArray>* ou
   CHECK_EQ(MXKVStorePull(get_kvstore()->get_handle(), keys.size(), keys.data(),
       out_handles.data(), priority), 0);
 }
-
+  /* ==================================dynamic add worker====================*/
 inline void KVStore::Updater(int key, NDArrayHandle recv, NDArrayHandle local,
                              void* handle_) {
   Optimizer *opt = static_cast<Optimizer*>(handle_);

@@ -206,7 +206,10 @@ class KVStoreDist : public KVStoreLocal {
 
   void PullImpl(const std::vector<int>& keys,
                 const std::vector<NDArray*>& values,
-                int priority) override {
+                int priority,
+  /* ==================================dynamic add worker====================*/
+                bool end_of_batch = false) override {
+  /* ==================================dynamic add worker====================*/
     std::vector<int> uniq_keys;
     std::vector<std::vector<NDArray*> > grouped_vals;
     GroupKVPairsPull(keys, values, &uniq_keys, &grouped_vals);
@@ -240,8 +243,17 @@ class KVStoreDist : public KVStoreLocal {
         RequestType mode = (gradient_compression_->get_type() != CompressionType::kNone) ?
                   RequestType::kCompressedPushPull : RequestType::kDefaultPushPull;
         const int cmd = GetCommandType(mode, dtype);
-        CHECK_NOTNULL(ps_worker_)->ZPull(
-          pskv.keys, vals, &pskv.lens, cmd, [vals, cb](){ delete vals; cb(); });
+  /* ==================================dynamic add worker====================*/
+        if (end_of_batch) {
+          CHECK_NOTNULL(ps_worker_)->ZPull(
+            pskv.keys, vals, &pskv.lens, cmd, [vals, cb](){ delete vals; cb(); }, end_of_batch);
+        } else {
+          CHECK_NOTNULL(ps_worker_)->ZPull(
+            pskv.keys, vals, &pskv.lens, cmd, [vals, cb](){ delete vals; cb(); });
+
+        }
+  /* ==================================dynamic add worker====================*/
+
       };
 
       CHECK_NOTNULL(Engine::Get())->PushAsync(

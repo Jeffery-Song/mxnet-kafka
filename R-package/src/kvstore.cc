@@ -55,7 +55,10 @@ void KVStore::Push(const std::vector<int>& keys,
 
 void KVStore::Pull(const std::vector<int>& keys,
                    const Rcpp::List& out_lists,
-                   const std::vector<int>& priority) {
+                   const std::vector<int>& priority, 
+/* ==================================dynamic add worker====================*/
+                   bool end_of_batch = false) {
+/* ==================================dynamic add worker====================*/
   RCHECK(keys.size() == priority.size() || priority.size() == 0)
       << "The length of keys should be same as length of priority";
   std::vector<std::vector<NDArrayHandle> > vec(out_lists.size());

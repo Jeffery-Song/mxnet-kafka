@@ -234,8 +234,9 @@ class KVStore(object):
             check_call(_LIB.MXKVStorePush(
                 self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority)))
 
-
-    def pull(self, key, out=None, priority=0):
+#  ==================================dynamic add worker====================
+    def pull(self, key, out=None, priority=0, end_of_batch = False):
+# ==================================dynamic add worker====================*/
         """ Pulls a single value or a sequence of values from the store.
 
         This function returns immediately after adding an operator to the engine.
@@ -298,12 +299,13 @@ class KVStore(object):
         assert(out is not None)
         ckeys, cvals, use_str_keys = _ctype_key_value(key, out)
         if use_str_keys:
+# ==================================dynamic add worker====================*/
             check_call(_LIB.MXKVStorePullEx(
-                self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority)))
+                self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority), end_of_batch))
         else:
             check_call(_LIB.MXKVStorePull(
-                self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority)))
-
+                self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority), end_of_batch))
+# ==================================dynamic add worker====================*/
     def row_sparse_pull(self, key, out=None, priority=0, row_ids=None):
         """ Pulls a single RowSparseNDArray value or a sequence of RowSparseNDArray values \
         from the store with specified row_ids. When there is only one row_id, KVStoreRowSparsePull \

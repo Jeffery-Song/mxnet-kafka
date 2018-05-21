@@ -1855,7 +1855,10 @@ MXNET_DLL int MXKVStorePull(KVStoreHandle handle,
                             mx_uint num,
                             const int* keys,
                             NDArrayHandle* vals,
-                            int priority);
+                            int priority, 
+/* ==================================dynamic add worker====================*/
+                            bool end_of_batch = false);
+/* ==================================dynamic add worker====================*/
 /*!
  * \brief pull a list of (key, value) pairs from the kvstore, where each key is a string
  * \param handle handle to the kvstore
@@ -1869,7 +1872,11 @@ MXNET_DLL int MXKVStorePullEx(KVStoreHandle handle,
                               mx_uint num,
                               const char** keys,
                               NDArrayHandle* vals,
-                              int priority);
+                              int priority, 
+  /* ==================================dynamic add worker====================*/
+                              bool end_of_batch = false);
+  /* ==================================dynamic add worker====================*/
+
 
 /*!
  * \brief pull a list of (key, value) pairs from the kvstore, where each key is an integer.

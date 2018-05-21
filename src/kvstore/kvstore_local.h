@@ -101,9 +101,17 @@ class KVStoreLocal : public KVStore {
 
   void Pull(const std::vector<int>& keys,
             const std::vector<NDArray*>& values,
-            int priority) override {
+            int priority,
+  /* ==================================dynamic add worker====================*/
+            bool end_of_batch = false) override {
+
     SetKeyType(kIntKey);
-    PullImpl(keys, values, priority);
+    if (end_of_batch) {
+      PullImpl(keys, values, priority);
+    } else {
+      PullImpl(keys, values, priority, end_of_batch);
+    }
+  /* ==================================dynamic add worker====================*/
   }
 
   void PullRowSparse(const std::vector<int>& keys,
@@ -124,11 +132,15 @@ class KVStoreLocal : public KVStore {
 
   void Pull(const std::vector<std::string>& str_keys,
             const std::vector<NDArray*>& values,
-            int priority) override {
+            int priority, 
+  /* ==================================dynamic add worker====================*/
+            bool end_of_batch = false) override {
+  /* ==================================dynamic add worker====================*/
+
     SetKeyType(kStringKey);
     std::vector<int> keys(str_keys.size());
     LookupKeys(str_keys, &keys);
-    PullImpl(keys, values, priority);
+    PullImpl(keys, values, priority, end_of_batch);
   }
 
   void PullRowSparse(const std::vector<std::string>& str_keys,

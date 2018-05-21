@@ -509,13 +509,16 @@ class BaseModule(object):
                 if monitor is not None:
                     monitor.tic()
                 self.forward_backward(data_batch)
-                self.update()
+# ==================================dynamic add worker====================*/
+
                 try:
                     # pre fetch next batch
                     next_data_batch = next(data_iter)
                     self.prepare(next_data_batch, sparse_row_id_fn=sparse_row_id_fn)
                 except StopIteration:
                     end_of_batch = True
+                self.update(end_of_batch)
+# ==================================dynamic add worker====================*/
 
                 self.update_metric(eval_metric, data_batch.label)
 
