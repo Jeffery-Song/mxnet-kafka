@@ -856,7 +856,7 @@ int MXKVStorePull(KVStoreHandle handle,
                   NDArrayHandle* vals,
                   int priority, 
   /* ==================================dynamic add worker====================*/
-                  bool end_of_batch = false) {
+                  bool end_of_batch) {
   API_BEGIN();
   std::vector<int> v_keys(num);
   std::vector<NDArray*> v_vals(num);
@@ -879,7 +879,7 @@ int MXKVStorePullEx(KVStoreHandle handle,
                   NDArrayHandle* vals,
                   int priority,   
 /* ==================================dynamic add worker====================*/
-                  bool end_of_batch = false) {
+                  bool end_of_batch) {
   API_BEGIN();
   std::vector<std::string> v_keys(num);
   std::vector<NDArray*> v_vals(num);
