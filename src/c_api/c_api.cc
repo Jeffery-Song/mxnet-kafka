@@ -865,7 +865,7 @@ int MXKVStorePull(KVStoreHandle handle,
     v_vals[i] = static_cast<NDArray*>(vals[i]);
   }
   if (end_of_batch) {
-    static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority, end_of_batch);
+    static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority, true);
   } else {
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority);
   }
@@ -888,7 +888,7 @@ int MXKVStorePullEx(KVStoreHandle handle,
     v_vals[i] = static_cast<NDArray*>(vals[i]);
   }
   if (end_of_batch) {
-    static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority, end_of_batch);
+    static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority, true);
   } else {
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority);
   }

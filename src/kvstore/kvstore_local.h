@@ -101,18 +101,25 @@ class KVStoreLocal : public KVStore {
 
   void Pull(const std::vector<int>& keys,
             const std::vector<NDArray*>& values,
-            int priority,
+            int priority) override {
+    SetKeyType(kIntKey);
+    PullImpl(keys, values, priority);
+  }
+
   /* ==================================dynamic add worker====================*/
-            bool end_of_batch = false) override {
+  void Pull(const std::vector<int>& keys,
+            const std::vector<NDArray*>& values,
+            int priority,
+            bool end_of_batch) override {
 
     SetKeyType(kIntKey);
     if (end_of_batch) {
-      PullImpl(keys, values, priority);
+      PullImpl(keys, values, priority, true);
     } else {
-      PullImpl(keys, values, priority, end_of_batch);
+      PullImpl(keys, values, priority);
     }
-  /* ==================================dynamic add worker====================*/
   }
+  /* ==================================dynamic add worker====================*/
 
   void PullRowSparse(const std::vector<int>& keys,
                      const std::vector<std::pair<NDArray*, NDArray>>& val_rowids,

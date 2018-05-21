@@ -133,7 +133,10 @@ def _update_params_on_kvstore(param_arrays, grad_arrays, kvstore, param_names, e
         # push gradient, priority is negative index
         kvstore.push(name, grad_list, priority=-index)
         # pull back the weights
-        kvstore.pull(name, arg_list, priority=-index, end_of_batch)
+        if end_of_batch:
+            kvstore.pull(name, arg_list, priority=-index, True)
+        else:
+            kvstore.pull(name, arg_list, priority=-index)
 # ==================================dynamic add worker====================*/
 def _update_params(param_arrays, grad_arrays, updater, num_device,
                    kvstore=None, param_names=None):
