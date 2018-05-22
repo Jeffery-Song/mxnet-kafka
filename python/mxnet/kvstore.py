@@ -298,19 +298,19 @@ class KVStore(object):
         """
         assert(out is not None)
         ckeys, cvals, use_str_keys = _ctype_key_value(key, out)
-        if use_str_keys:
-            check_call(_LIB.MXKVStorePullEx(
-                self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority)))
-        else:
-            check_call(_LIB.MXKVStorePull(
-                self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority)))
-# ==================================dynamic add worker====================*/
         # if use_str_keys:
-        #     check_call(_LIB.MXKVStorePullEx_end(
-        #         self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority), end_of_batch))
+        #     check_call(_LIB.MXKVStorePullEx(
+        #         self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority)))
         # else:
-        #     check_call(_LIB.MXKVStorePull_end(
-        #         self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority), end_of_batch))
+        #     check_call(_LIB.MXKVStorePull(
+        #         self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority)))
+# ==================================dynamic add worker====================*/
+        if use_str_keys:
+            check_call(_LIB.MXKVStorePullEx_end(
+                self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority), end_of_batch))
+        else:
+            check_call(_LIB.MXKVStorePull_end(
+                self.handle, mx_uint(len(ckeys)), ckeys, cvals, ctypes.c_int(priority), end_of_batch))
 # ==================================dynamic add worker====================*/
     def row_sparse_pull(self, key, out=None, priority=0, row_ids=None):
         """ Pulls a single RowSparseNDArray value or a sequence of RowSparseNDArray values \

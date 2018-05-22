@@ -146,7 +146,8 @@ class KVStoreNCCL : public KVStoreLocal {
 
   void PullImpl(const std::vector<int>& keys,
                 const std::vector<NDArray*>& values,
-                int priority) override {
+                int priority,
+                bool end_of_batch = false) override {
     std::vector<int> uniq_keys;
     std::vector<std::vector<NDArray*> > grouped_vals;
     GroupKVPairsHelper(keys, values, &uniq_keys, &grouped_vals);

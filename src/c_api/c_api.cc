@@ -883,6 +883,7 @@ int MXKVStorePullEx(KVStoreHandle handle,
 }
 
   /* ==================================dynamic add worker====================*/
+
 int MXKVStorePull_end(KVStoreHandle handle,
                   mx_uint num,
                   const int* keys,
@@ -897,6 +898,7 @@ int MXKVStorePull_end(KVStoreHandle handle,
     v_vals[i] = static_cast<NDArray*>(vals[i]);
   }
   if (end_of_batch) {
+    std::cerr << "pull in c finds out end is true\n";
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority, true);
   } else {
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority);
@@ -918,6 +920,7 @@ int MXKVStorePullEx_end(KVStoreHandle handle,
     v_vals[i] = static_cast<NDArray*>(vals[i]);
   }
   if (end_of_batch) {
+    std::cerr << "pullex in c finds out end is true\n";
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority, true);
   } else {
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority);

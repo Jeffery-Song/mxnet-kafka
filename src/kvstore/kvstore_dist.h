@@ -50,9 +50,13 @@ class KVStoreDist : public KVStoreLocal {
       ps_worker_ = new ps::KVWorker<char>(0, new_customer_id);
       ps::StartAsync(new_customer_id, "mxnet\0");
       if (!ps::Postoffice::Get()->is_recovery()) {
-        ps::Postoffice::Get()->Barrier(
-          new_customer_id,
-          ps::kWorkerGroup + ps::kServerGroup + ps::kScheduler);
+        if (ps::Environment::Get()->find("DYNAMIC_ADD_NODE")) {
+          
+        } else {
+          ps::Postoffice::Get()->Barrier(
+            new_customer_id,
+            ps::kWorkerGroup + ps::kServerGroup + ps::kScheduler);
+        }
       }
     }
     bigarray_bound_ = dmlc::GetEnv("MXNET_KVSTORE_BIGARRAY_BOUND", 1000 * 1000);
@@ -245,8 +249,9 @@ class KVStoreDist : public KVStoreLocal {
         const int cmd = GetCommandType(mode, dtype);
   /* ==================================dynamic add worker====================*/
         if (end_of_batch) {
+          std::cerr << "kv dist pullimpl with end=true\n";
           CHECK_NOTNULL(ps_worker_)->ZPull(
-            pskv.keys, vals, &pskv.lens, cmd, [vals, cb](){ delete vals; cb(); }, end_of_batch);
+            pskv.keys, vals, &pskv.lens, cmd, [vals, cb](){ delete vals; cb(); }, true);
         } else {
           CHECK_NOTNULL(ps_worker_)->ZPull(
             pskv.keys, vals, &pskv.lens, cmd, [vals, cb](){ delete vals; cb(); });

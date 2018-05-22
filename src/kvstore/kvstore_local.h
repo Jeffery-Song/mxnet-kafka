@@ -147,18 +147,22 @@ class KVStoreLocal : public KVStore {
     PullImpl(keys, values, priority);
   }
 
+  /* ==================================dynamic add worker====================*/
   void Pull(const std::vector<std::string>& str_keys,
             const std::vector<NDArray*>& values,
             int priority, 
-  /* ==================================dynamic add worker====================*/
-            bool end_of_batch = false) override {
-  /* ==================================dynamic add worker====================*/
-
+            bool end_of_batch) override {
+    std::cerr << "kv local pull with end=true\n";
     SetKeyType(kStringKey);
     std::vector<int> keys(str_keys.size());
     LookupKeys(str_keys, &keys);
-    PullImpl(keys, values, priority, end_of_batch);
+    if (end_of_batch) {
+      PullImpl(keys, values, priority, true);
+    } else {
+      PullImpl(keys, values, priority);
+    }
   }
+  /* ==================================dynamic add worker====================*/
 
   void PullRowSparse(const std::vector<std::string>& str_keys,
                      const std::vector<std::pair<NDArray*, NDArray>>& val_rowids,
@@ -231,6 +235,9 @@ class KVStoreLocal : public KVStore {
   /* ==================================dynamic add worker====================*/
                         bool end_of_batch = false) {
   /* ==================================dynamic add worker====================*/
+    if (end_of_batch) {
+      std::cerr << "kv local pullimpl with end_of_batch true\n";
+    }
     std::vector<int> uniq_keys;
     std::vector<std::vector<NDArray*> > grouped_vals;
     GroupKVPairsPull(keys, values, &uniq_keys, &grouped_vals);
