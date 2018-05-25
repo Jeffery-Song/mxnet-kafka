@@ -304,4 +304,6 @@ def fit(args, network, data_loader, **kwargs):
               batch_end_callback=batch_end_callbacks,
               epoch_end_callback=checkpoint,
               allow_missing=True,
-              monitor=monitor)
+              monitor=monitor,
+              args_for_change_data=args,
+              data_loader=data_loader)

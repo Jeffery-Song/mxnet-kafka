@@ -170,3 +170,5 @@ tests/mxnet_unit_tests
 # for upload
 files
 upload.py
+example/common
+tests/python/quantization/common.py

@@ -123,12 +123,15 @@ def _update_params_on_kvstore_nccl(param_arrays, grad_arrays, kvstore, param_nam
         kvstore.pull(valid_param_names[start:end], valid_param_arrays[start:end], priority=-start)
         start = end
 # ==================================dynamic add worker====================*/
-def _update_params_on_kvstore(param_arrays, grad_arrays, kvstore, param_names, end_of_batch = False):
+def _update_params_on_kvstore(param_arrays, grad_arrays, kvstore, param_names, end_of_batch = False, first_pull = False):
     """Perform update of param_arrays from grad_arrays on kvstore."""
-    zipped = zip(param_arrays, grad_arrays)
-    cur_idx = 1
-    if end_of_batch:
-        size = len(list(zipped))
+    # zipped = zip(param_arrays, grad_arrays)
+    first_of_endpull = True
+    num_server = kvstore.num_servers
+    
+    cnt = 0
+    # if end_of_batch:
+        # size = len(list(zipped))
         # print(size)
     for index, pair in enumerate(zip(param_arrays, grad_arrays)):
         arg_list, grad_list = pair
@@ -136,18 +139,21 @@ def _update_params_on_kvstore(param_arrays, grad_arrays, kvstore, param_names, e
             continue
         name = param_names[index]
         # push gradient, priority is negative index
-        kvstore.push(name, grad_list, priority=-index)
+        if not first_pull:
+            kvstore.push(name, grad_list, priority=-index)
         # pull back the weights
         if end_of_batch:
             # print(cur_idx)
-            if cur_idx == size:
-                print("call kvstore.pull with end true")
+            if cnt < num_server:
+                # first_of_endpull = False
+                print("call kvstore.pull with end true, server size is {}, this is {}".format(num_server, cnt))
+                cnt += 1
                 kvstore.pull(name, arg_list, priority=-index, end_of_batch=True)
             else:
                 kvstore.pull(name, arg_list, priority=-index)
         else:
             kvstore.pull(name, arg_list, priority=-index)
-        cur_idx += 1
+        # cur_idx += 1
 # ==================================dynamic add worker====================*/
 def _update_params(param_arrays, grad_arrays, updater, num_device,
                    kvstore=None, param_names=None):

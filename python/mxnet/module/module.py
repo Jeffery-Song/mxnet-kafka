@@ -629,7 +629,7 @@ class Module(BaseModule):
         self._exec_group.backward(out_grads=out_grads)
 
 #* ==================================dynamic add worker====================*/
-    def update(self, end_of_batch = False):
+    def update(self, end_of_batch = False, first_pull = False):
         """Updates parameters according to the installed optimizer and the gradients computed
         in the previous forward-backward batch.
 
@@ -647,12 +647,19 @@ class Module(BaseModule):
 
         self._params_dirty = True
         if self._update_on_kvstore:
-            if end_of_batch:
+            if first_pull:
+                print("new worker first pull")
+                _update_params_on_kvstore(self._exec_group.param_arrays,
+                                          self._exec_group.grad_arrays,
+                                          self._kvstore, self._exec_group.param_names,
+                                          end_of_batch = False,
+                                          first_pull = True)
+            elif end_of_batch:
                 print("end of batch, update now")
                 _update_params_on_kvstore(self._exec_group.param_arrays,
                                           self._exec_group.grad_arrays,
                                           self._kvstore, self._exec_group.param_names,
-                                          end_of_batch)
+                                          end_of_batch = True)
             else :
                 _update_params_on_kvstore(self._exec_group.param_arrays,
                                           self._exec_group.grad_arrays,

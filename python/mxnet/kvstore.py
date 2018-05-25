@@ -535,6 +535,40 @@ class KVStore(object):
         size = ctypes.c_int()
         check_call(_LIB.MXKVStoreGetGroupSize(self.handle, ctypes.byref(size)))
         return size.value
+    
+    @property
+    def num_servers(self):
+        """Returns the number of worker nodes.
+
+        Returns
+        -------
+        size :int
+            The number of worker nodes.
+        """
+        size = ctypes.c_int()
+        check_call(_LIB.MXKVStoreGetServerSize(self.handle, ctypes.byref(size)))
+        return size.value
+
+    @property
+    def epoch(self):
+        """Returns the number of worker nodes.
+
+        Returns
+        -------
+        size :int
+            The number of worker nodes.
+        """
+        epo = ctypes.c_int()
+        check_call(_LIB.MXKVStoreGetEpoch(self.handle, ctypes.byref(epo)))
+        return epo.value
+    @property
+    def epoch_iter(self):
+        epo = ctypes.c_int()
+        check_call(_LIB.MXKVStoreGetEpoch(self.handle, ctypes.byref(epo)))
+        curr_epo = epo.value
+        print("kve = {}".format(curr_epo))
+        check_call(_LIB.MXKVStoreSetEpoch(self.handle, curr_epo + 1))
+        return curr_epo + 1
 
     def save_optimizer_states(self, fname, dump_optimizer=False):
         """Saves the optimizer (updater) state to a file. This is often used when checkpointing

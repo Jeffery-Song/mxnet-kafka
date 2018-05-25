@@ -303,6 +303,13 @@ class KVStore {
 #endif  // MXNET_USE_DIST_KVSTORE
   }
 
+  int GetCurrentEpoch() {
+    return ps::Postoffice::Get()->curr_epoch;
+  }
+  void SetCurrentEpoch(int epo) {
+    ps::Postoffice::Get()->set_curr_epoch(epo);
+  }
+
   void set_barrier_before_exit(const bool barrier_before_exit) {
 #if MXNET_USE_DIST_KVSTORE
     if (!IsWorkerNode()) LOG(FATAL) << "barrier_before_exit takes effect only on worker nodes";
@@ -340,6 +347,11 @@ class KVStore {
    * \return The number of worker nodes
    */
   virtual int get_group_size() const {
+    return 1;
+  }
+
+
+  virtual int get_server_size() const {
     return 1;
   }
 

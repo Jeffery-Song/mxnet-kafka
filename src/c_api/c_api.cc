@@ -927,6 +927,18 @@ int MXKVStorePullEx_end(KVStoreHandle handle,
   }
   API_END();
 }
+
+int MXKVStoreGetEpoch(KVStoreHandle handle, int* epoch) {
+  API_BEGIN();
+  *epoch = static_cast<KVStore*>(handle)->GetCurrentEpoch();
+  API_END();
+}
+int MXKVStoreSetEpoch(KVStoreHandle handle, int epoch) {
+  API_BEGIN();
+  static_cast<KVStore*>(handle)->SetCurrentEpoch(epoch);
+  API_END();
+}
+
 /* ==================================dynamic add worker====================*/
 
 int MXKVStorePullRowSparse(KVStoreHandle handle,
@@ -1021,6 +1033,11 @@ int MXKVStoreGetRank(KVStoreHandle handle, int *rank) {
 int MXKVStoreGetGroupSize(KVStoreHandle handle, int *size) {
   API_BEGIN();
   *size = static_cast<KVStore*>(handle)->get_group_size();
+  API_END();
+}
+int MXKVStoreGetServerSize(KVStoreHandle handle, int *size) {
+  API_BEGIN();
+  *size = static_cast<KVStore*>(handle)->get_server_size();
   API_END();
 }
 

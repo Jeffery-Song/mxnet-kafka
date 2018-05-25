@@ -1904,6 +1904,11 @@ MXNET_DLL int MXKVStorePullEx_end(KVStoreHandle handle,
                               NDArrayHandle* vals,
                               int priority, 
                               bool end_of_batch = false);
+
+
+
+MXNET_DLL int MXKVStoreGetEpoch(KVStoreHandle handle, int* epoch);
+MXNET_DLL int MXKVStoreSetEpoch(KVStoreHandle handle, int epoch);
   /* ==================================dynamic add worker====================*/
 
 
@@ -2024,6 +2029,7 @@ MXNET_DLL int MXKVStoreGetRank(KVStoreHandle handle,
 MXNET_DLL int MXKVStoreGetGroupSize(KVStoreHandle handle,
                                     int *ret);
 
+MXNET_DLL int MXKVStoreGetServerSize(KVStoreHandle handle, int *size);
 /**
  * \brief return whether or not this process is a worker node.
  * \param ret 1 for yes, 0 for no

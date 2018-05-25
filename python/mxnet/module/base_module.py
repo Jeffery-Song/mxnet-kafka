@@ -399,7 +399,7 @@ class BaseModule(object):
             eval_batch_end_callback=None, initializer=Uniform(0.01),
             arg_params=None, aux_params=None, allow_missing=False,
             force_rebind=False, force_init=False, begin_epoch=0, num_epoch=None,
-            validation_metric=None, monitor=None, sparse_row_id_fn=None):
+            validation_metric=None, monitor=None, sparse_row_id_fn=None, args_for_change_data=None, data_loader=None):
         """Trains the module parameters.
 
         Checkout `Module Tutorial <http://mxnet.io/tutorials/basic/module.html>`_ to see
@@ -497,7 +497,18 @@ class BaseModule(object):
         ################################################################################
         # training loop
         ################################################################################
-        for epoch in range(begin_epoch, num_epoch):
+        old_num_worker = kvstore.num_workers
+        print("start with {} workers".format(old_num_worker))
+        self.update(end_of_batch = False, first_pull = True)
+        started = False
+        epoch = begin_epoch
+        while epoch < num_epoch:
+        # for epoch in range(begin_epoch, num_epoch):
+            print("now we have {} workers".format(kvstore.num_workers))
+            if kvstore.num_workers != old_num_worker:
+                print("should change data iter here")
+                (train_data, eval_data) = data_loader(args_for_change_data, kvstore)
+                old_num_worker=kvstore.num_workers
             tic = time.time()
             eval_metric.reset()
             nbatch = 0
@@ -517,7 +528,7 @@ class BaseModule(object):
                     self.prepare(next_data_batch, sparse_row_id_fn=sparse_row_id_fn)
                 except StopIteration:
                     end_of_batch = True
-                self.update(end_of_batch)
+                self.update(end_of_batch = end_of_batch, first_pull = False)
 # ==================================dynamic add worker====================*/
 
                 self.update_metric(eval_metric, data_batch.label)
@@ -527,7 +538,13 @@ class BaseModule(object):
 
                 if end_of_batch:
                     eval_name_vals = eval_metric.get_name_value()
-
+                if not started:
+                    started = True
+                    if kvstore.epoch == -1:
+                        epoch = 0
+                    else:
+                        epoch = kvstore.epoch + 1
+                # epoch = kvstore.epoch + 1
                 if batch_end_callback is not None:
                     batch_end_params = BatchEndParam(epoch=epoch, nbatch=nbatch,
                                                      eval_metric=eval_metric,
@@ -537,6 +554,7 @@ class BaseModule(object):
                 nbatch += 1
 
             # one epoch of training is finished
+            # self.logger.info('Epoch is %d', epoch_from_kv)
             for name, val in eval_name_vals:
                 self.logger.info('Epoch[%d] Train-%s=%f', epoch, name, val)
             toc = time.time()
@@ -562,6 +580,12 @@ class BaseModule(object):
 
             # end of 1 epoch, reset the data-iter for another epoch
             train_data.reset()
+            # epoch += 1
+            # if not started:
+                # started = True
+
+            epoch += 1
+            # self.logger.info('iter now, Epoch[%d]', epoch)
 
     ################################################################################
     # Symbol information

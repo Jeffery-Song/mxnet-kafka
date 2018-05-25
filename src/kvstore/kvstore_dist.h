@@ -51,7 +51,7 @@ class KVStoreDist : public KVStoreLocal {
       ps::StartAsync(new_customer_id, "mxnet\0");
       if (!ps::Postoffice::Get()->is_recovery()) {
         if (ps::Environment::Get()->find("DYNAMIC_ADD_NODE")) {
-          
+
         } else {
           ps::Postoffice::Get()->Barrier(
             new_customer_id,
@@ -107,6 +107,8 @@ class KVStoreDist : public KVStoreLocal {
   }
 
   int get_group_size() const override { return ps::NumWorkers(); }
+
+  int get_server_size() const override { return ps::NumServers(); }
 
   int get_rank() const override { return ps::MyRank(); }
 
@@ -198,6 +200,7 @@ class KVStoreDist : public KVStoreLocal {
       // do nothing
     }
     if (!ps::Postoffice::Get()->is_recovery()) {
+      if (!ps::Environment::Get()->find("DYNAMIC_ADD_NODE")) 
       Barrier();
     }
   }
