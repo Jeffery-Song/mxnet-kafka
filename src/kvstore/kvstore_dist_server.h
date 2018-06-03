@@ -32,6 +32,7 @@
 #include <functional>
 #include <future>
 #include <vector>
+#include <iostream>
 #include "ps/ps.h"
 #include "mxnet/kvstore.h"
 #include "../operator/tensor/elemwise_binary_op-inl.h"
@@ -193,6 +194,7 @@ class KVStoreDistServer {
 
   void CommandHandle(const ps::SimpleData& recved, ps::SimpleApp* app) {
     CommandType recved_type = static_cast<CommandType>(recved.head);
+    // std::cerr << "server recv cmd : " << (int)recved_type << std::endl;
     if (recved_type == CommandType::kStopServer) {
       exec_.Stop();
     } else if (recved_type == CommandType::kSyncMode) {

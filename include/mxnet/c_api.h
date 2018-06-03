@@ -1909,6 +1909,7 @@ MXNET_DLL int MXKVStorePullEx_end(KVStoreHandle handle,
 
 MXNET_DLL int MXKVStoreGetEpoch(KVStoreHandle handle, int* epoch);
 MXNET_DLL int MXKVStoreSetEpoch(KVStoreHandle handle, int epoch);
+MXNET_DLL int MXKVStoreGetBatchPerEpoch(KVStoreHandle handle, int* batch_per_epoch);
   /* ==================================dynamic add worker====================*/
 
 

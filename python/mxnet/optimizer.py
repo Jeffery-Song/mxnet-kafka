@@ -22,6 +22,8 @@ import math
 import pickle
 import warnings
 import numpy
+import logging
+import os
 from .base import py_str
 from .ndarray import (NDArray, zeros, clip, sqrt, cast, maximum, abs as NDabs)
 from .ndarray import (sgd_update, sgd_mom_update, adam_update, rmsprop_update, rmspropalex_update,
@@ -78,7 +80,9 @@ class Optimizer(object):
     def __init__(self, rescale_grad=1., param_idx2name=None, wd=0.,
                  clip_gradient=None, learning_rate=0.01,
                  lr_scheduler=None, sym=None, begin_num_update=0,
-                 multi_precision=False, param_dict=None):
+                 multi_precision=False, param_dict=None, updates_per_epoch=None, global_batch_size=None):
+        print(os.environ['DMLC_ROLE'])
+        print('init optimizer')
         self.rescale_grad = rescale_grad
         self.lr = learning_rate
         self.lr_scheduler = lr_scheduler
@@ -93,6 +97,9 @@ class Optimizer(object):
         self._index_update_count = {}
         self.clip_gradient = clip_gradient
         self.multi_precision = multi_precision
+
+        self.epoch_size = updates_per_epoch
+        self.global_batch_size = global_batch_size
 
         if param_idx2name is None:
             param_idx2name = {}
@@ -374,7 +381,10 @@ class Optimizer(object):
         if index not in self._index_update_count:
             self._index_update_count[index] = self.begin_num_update
         self._index_update_count[index] += 1
-        self.num_update = max(self._index_update_count[index], self.num_update)
+        if max(self._index_update_count[index], self.num_update) > self.num_update:
+            self.num_update = max(self._index_update_count[index], self.num_update)
+            # logging.info('role {} update num_update to {}, idx is{}'.format(os.environ['DMLC_ROLE'], self.num_update, index))
+            # logging.info('self is {}'.format(self))
 
     def _get_lr(self, index):
         """Gets the learning rate given the index of the weight.
@@ -475,9 +485,11 @@ class SGD(Optimizer):
                 Turning this on can improve convergence and accuracy when training with float16.
     """
     def __init__(self, momentum=0.0, lazy_update=True, **kwargs):
+        print(kwargs)
         super(SGD, self).__init__(**kwargs)
         self.momentum = momentum
         self.lazy_update = lazy_update
+        logging.info("init SGD")
 
     def create_state_multi_precision(self, index, weight):
         weight_master_copy = None

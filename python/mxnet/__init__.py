@@ -20,7 +20,7 @@
 # coding: utf-8
 """MXNet: a concise, fast and flexible framework for deep learning."""
 from __future__ import absolute_import
-
+# print("inside __init__.py")
 from .context import Context, current_context, cpu, gpu
 from . import engine
 from .base import MXNetError
@@ -50,10 +50,13 @@ from . import visualization
 # use viz as short for mx.ndarray
 from . import visualization as viz
 from . import callback
+# print("importing lr")
 # from . import misc
 from . import lr_scheduler
 # use mx.kv as short for kvstore
+# print("importing kv")
 from . import kvstore as kv
+# print("importing kv_server")
 from . import kvstore_server
 # Runtime compile module
 from . import rtc
@@ -68,6 +71,7 @@ from . import torch as th
 
 from . import profiler
 from . import log
+# print("inside __init__.py")
 
 from . import module
 from . import module as mod

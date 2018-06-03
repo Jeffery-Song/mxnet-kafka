@@ -655,7 +655,7 @@ class Module(BaseModule):
                                           end_of_batch = False,
                                           first_pull = True)
             elif end_of_batch:
-                print("end of batch, update now")
+                # print("end of batch, update now")
                 _update_params_on_kvstore(self._exec_group.param_arrays,
                                           self._exec_group.grad_arrays,
                                           self._kvstore, self._exec_group.param_names,

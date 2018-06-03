@@ -139,6 +139,7 @@ def add_fit_args(parser):
 
 
 def fit(args, network, data_loader, **kwargs):
+    print(os.environ['MXNET_CMD'])
     """
     train a model
     args : argparse returns
@@ -196,11 +197,19 @@ def fit(args, network, data_loader, **kwargs):
     )
 
     lr_scheduler = lr_scheduler
+
+    if 'dist' in args.kv_store:
+        nworkers = kv.num_workers
+    else:
+        nworkers = 1
+    epoch_size = args.num_examples / args.batch_size / nworkers
     optimizer_params = {
         'learning_rate': lr,
         'wd': args.wd,
         'lr_scheduler': lr_scheduler,
-        'multi_precision': True}
+        'multi_precision': True,
+        'updates_per_epoch' : epoch_size,
+        'global_batch_size' : args.batch_size * nworkers}
 
     # Only a limited number of optimizers have 'momentum' property
     has_momentum = {'sgd', 'dcasgd', 'nag'}

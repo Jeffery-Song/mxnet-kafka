@@ -152,7 +152,7 @@ class KVStoreLocal : public KVStore {
             const std::vector<NDArray*>& values,
             int priority, 
             bool end_of_batch) override {
-    std::cerr << "kv local pull with end=true\n";
+    // std::cerr << "kv local pull with end=true\n";
     SetKeyType(kStringKey);
     std::vector<int> keys(str_keys.size());
     LookupKeys(str_keys, &keys);
@@ -236,7 +236,7 @@ class KVStoreLocal : public KVStore {
                         bool end_of_batch = false) {
   /* ==================================dynamic add worker====================*/
     if (end_of_batch) {
-      std::cerr << "kv local pullimpl with end_of_batch true\n";
+      // std::cerr << "kv local pullimpl with end_of_batch true\n";
     }
     std::vector<int> uniq_keys;
     std::vector<std::vector<NDArray*> > grouped_vals;

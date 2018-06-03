@@ -309,6 +309,9 @@ class KVStore {
   void SetCurrentEpoch(int epo) {
     ps::Postoffice::Get()->set_curr_epoch(epo);
   }
+  int GetBatchPerEpoch() {
+    return ps::Postoffice::Get()->batch_per_epoch;
+  }
 
   void set_barrier_before_exit(const bool barrier_before_exit) {
 #if MXNET_USE_DIST_KVSTORE

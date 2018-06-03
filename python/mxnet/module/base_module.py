@@ -19,9 +19,12 @@
 # pylint: disable=too-many-public-methods, too-many-branches, too-many-lines
 """`BaseModule` defines an API for modules."""
 
+import os
 import time
 import logging
 import warnings
+import subprocess
+from threading import Thread
 
 from .. import metric
 from .. import ndarray
@@ -501,20 +504,75 @@ class BaseModule(object):
         print("start with {} workers".format(old_num_worker))
         self.update(end_of_batch = False, first_pull = True)
         started = False
+        default_worker = False
         epoch = begin_epoch
+        # add_now = [20 - 1, 40 - 1, 60 - 1]
+        # add_now = [1, 2, 3]
+# ==================================dynamic add worker====================*/
+        if kvstore.rank == 0:
+            default_worker = True
+        if default_worker:
+            if os.environ['ADD_EPOCH'] == 'None':
+                add_now = []
+            else:
+                # print("i is:", i)
+                # self.logger.info(os.environ['ADD_EPOCH'])
+                add_now = [int(i) for i in os.environ['ADD_EPOCH'].split(',')]
+            next_node = os.environ['MXNET_WORKERS'].split(',')
+            next_node_idx = (kvstore.num_workers + kvstore.num_servers) % len(next_node)
+        # add_now = []
+        # worker_to_gpu = [0, 0, 3, 4, 5]
+        def run(prog):
+            subprocess.check_call(prog, shell = True)
+# ==================================dynamic add worker====================*/
         while epoch < num_epoch:
         # for epoch in range(begin_epoch, num_epoch):
-            print("now we have {} workers".format(kvstore.num_workers))
+# ==================================dynamic add worker====================*/
+            self.logger.info("now we have {} workers".format(kvstore.num_workers))
+            # self.logger.info(os.environ['ADD_EPOCH'])
             if kvstore.num_workers != old_num_worker:
-                print("should change data iter here")
+                # a started worker finds out new worker
+                self.logger.info("should change data iter here")
+                # now the batch-size should be changed to global_batch_size / nworker
+                args_for_change_data.batch_size = int(optimizer_params['global_batch_size'] / kvstore.num_workers)
                 (train_data, eval_data) = data_loader(args_for_change_data, kvstore)
+                if isinstance(optimizer_params['lr_scheduler'].step, list):
+                    epoch_size = args_for_change_data.num_examples / args_for_change_data.batch_size
+                    for i in range(len(optimizer_params['lr_scheduler'].step)):
+                        if optimizer_params['lr_scheduler'].step[i] > epoch * epoch_size:
+                            optimizer_params['lr_scheduler'].step[i] -= epoch * epoch_size
+                            optimizer_params['lr_scheduler'].step[i] *= old_num_worker / float(kvstore.num_workers)
                 old_num_worker=kvstore.num_workers
+            if default_worker and (epoch in add_now):
+                prog = ' export DMLC_PS_ROOT_URI=' + os.environ['DMLC_PS_ROOT_URI'] + ';'
+                prog += ' export DMLC_PS_ROOT_PORT=8000; '
+                prog += ' export DMLC_NUM_SERVER=' + str(kvstore.num_servers) + ';'
+                prog += ' export DMLC_NUM_WORKER=' + str(old_num_worker + 1) + ';'
+                prog += ' export BROKERS=' + os.environ['BROKERS'] + ';'
+                prog += ' export DMLC_NODE_HOST=' + next_node[next_node_idx] + ';'
+                prog += ' export DMLC_ROLE=worker;'
+                prog += ' export DYNAMIC_ADD_NODE=true;'
+                prog += ' export MXNET_CMD="' + os.environ['MXNET_CMD'] + '";'
+                prog += ' cd ' + os.environ['MXNET_DIR'] + ';'
+                prog += os.environ['MXNET_CMD']
+                prog += ' --batch-size ' + str(int(optimizer_params['global_batch_size'] / (kvstore.num_workers + 1)))
+                prog = 'ssh -o StrictHostKeyChecking=no ' + next_node[next_node_idx] + ' \'' + prog + ' \''
+                # prog = 'cd mxnet-kafka-dy/example/image-classification; ./run_newworker' + str(old_num_worker + 1) + '.sh'
+                # prog = 'ssh gpu' + str(worker_to_gpu[old_num_worker + 1]) + ' \'' + prog + '\''
+                self.logger.info(prog)
+                thread = Thread(target = run, args=(prog,))
+                thread.setDaemon(True)
+                thread.start()
+                next_node_idx = (next_node_idx + 1) % len(next_node)
+# ==================================dynamic add worker====================*/
+
             tic = time.time()
             eval_metric.reset()
             nbatch = 0
             data_iter = iter(train_data)
             end_of_batch = False
             next_data_batch = next(data_iter)
+    
             while not end_of_batch:
                 data_batch = next_data_batch
                 if monitor is not None:
@@ -530,7 +588,7 @@ class BaseModule(object):
                     end_of_batch = True
                 self.update(end_of_batch = end_of_batch, first_pull = False)
 # ==================================dynamic add worker====================*/
-
+                # self.logger.info(data_batch.label)
                 self.update_metric(eval_metric, data_batch.label)
 
                 if monitor is not None:
@@ -538,12 +596,15 @@ class BaseModule(object):
 
                 if end_of_batch:
                     eval_name_vals = eval_metric.get_name_value()
+# ==================================dynamic add worker====================*/
                 if not started:
                     started = True
                     if kvstore.epoch == -1:
                         epoch = 0
+                        # default_worker = True
                     else:
                         epoch = kvstore.epoch + 1
+# ==================================dynamic add worker====================*/
                 # epoch = kvstore.epoch + 1
                 if batch_end_callback is not None:
                     batch_end_params = BatchEndParam(epoch=epoch, nbatch=nbatch,
@@ -587,6 +648,8 @@ class BaseModule(object):
             epoch += 1
             # self.logger.info('iter now, Epoch[%d]', epoch)
 
+    def check_dy_(self, epoch, kv, ):
+        pass
     ################################################################################
     # Symbol information
     ################################################################################

@@ -920,7 +920,7 @@ int MXKVStorePullEx_end(KVStoreHandle handle,
     v_vals[i] = static_cast<NDArray*>(vals[i]);
   }
   if (end_of_batch) {
-    std::cerr << "pullex in c finds out end is true\n";
+    // std::cerr << "pullex in c finds out end is true\n";
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority, true);
   } else {
     static_cast<KVStore*>(handle)->Pull(v_keys, v_vals, priority);
@@ -936,6 +936,11 @@ int MXKVStoreGetEpoch(KVStoreHandle handle, int* epoch) {
 int MXKVStoreSetEpoch(KVStoreHandle handle, int epoch) {
   API_BEGIN();
   static_cast<KVStore*>(handle)->SetCurrentEpoch(epoch);
+  API_END();
+}
+int MXKVStoreGetBatchPerEpoch(KVStoreHandle handle, int* batch_per_epoch) {
+  API_BEGIN();
+  *batch_per_epoch = static_cast<KVStore*>(handle)->GetBatchPerEpoch();
   API_END();
 }
 

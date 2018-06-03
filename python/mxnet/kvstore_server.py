@@ -52,10 +52,16 @@ class KVStoreServer(object):
 
             if cmd_id == 0:
                 try:
+                    # server recv the optimizer from worker, set it
                     optimizer = pickle.loads(cmd_body)
                 except:
                     raise
+                # let kvstore know that optimizer is set again, 
+                # meanning a new worker is up, wait for the end=true pull
+                # then set optimizer's lr's step
                 self.kvstore.set_optimizer(optimizer)
+                print(optimizer)
+                print(optimizer.lr_scheduler)
             else:
                 print("server %d, unknown command (%d, %s)" % (
                     self.kvstore.rank, cmd_id, cmd_body))

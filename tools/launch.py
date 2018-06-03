@@ -36,7 +36,8 @@ def dmlc_opts(opts):
             '--cluster', opts.launcher,
             '--host-file', opts.hostfile,
             '--sync-dst-dir', opts.sync_dst_dir,
-            '--brokers',opts.brokers] # gbxu
+            '--brokers',opts.brokers, # gbxu
+            '--add-epoch', opts.add_epoch]
 
     # convert to dictionary
     dopts = vars(opts)
@@ -92,9 +93,11 @@ def main():
 
     parser.add_argument('-b', '--brokers', required=True, type=str,
                         help = 'kafka bootstrap-server ')# gbxu
-
+    parser.add_argument('--add-epoch', type=str,
+                        help = 'when to add worker')
     args, unknown = parser.parse_known_args() # 1 parser
     print(args.brokers) # debug
+    print(args.add_epoch)
     args.command += unknown
     if args.num_servers is None:
         args.num_servers = args.num_workers

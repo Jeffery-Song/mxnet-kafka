@@ -19,7 +19,9 @@ import os
 import argparse
 import logging
 logging.basicConfig(level=logging.DEBUG)
-from common import find_mxnet, data, fit
+from common import find_mxnet
+from common import data
+from common import fit
 from common.util import download_file
 import mxnet as mx
 
@@ -54,7 +56,8 @@ if __name__ == '__main__':
         image_shape    = '3,28,28',
         pad_size       = 4,
         # train
-        batch_size     = 128,
+        batch_size     = 512,
+
         num_epochs     = 300,
         lr             = .05,
         lr_step_epochs = '200,250',

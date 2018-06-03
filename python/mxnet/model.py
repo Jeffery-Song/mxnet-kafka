@@ -146,7 +146,7 @@ def _update_params_on_kvstore(param_arrays, grad_arrays, kvstore, param_names, e
             # print(cur_idx)
             if cnt < num_server:
                 # first_of_endpull = False
-                print("call kvstore.pull with end true, server size is {}, this is {}".format(num_server, cnt))
+                # print("call kvstore.pull with end true, server size is {}, this is {}".format(num_server, cnt))
                 cnt += 1
                 kvstore.pull(name, arg_list, priority=-index, end_of_batch=True)
             else:

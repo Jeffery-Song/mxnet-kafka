@@ -107,6 +107,9 @@ class KVStore(object):
         self._updater = None
         self._updater_func = None
         self._str_updater_func = None
+        self._num_workers_for_updater = 0
+        self._step_epoch = None
+        self._global_batch_size = None
 
     def __del__(self):
         check_call(_LIB.MXKVStoreFree(self.handle))
@@ -561,6 +564,7 @@ class KVStore(object):
         epo = ctypes.c_int()
         check_call(_LIB.MXKVStoreGetEpoch(self.handle, ctypes.byref(epo)))
         return epo.value
+
     @property
     def epoch_iter(self):
         epo = ctypes.c_int()
@@ -569,6 +573,14 @@ class KVStore(object):
         print("kve = {}".format(curr_epo))
         check_call(_LIB.MXKVStoreSetEpoch(self.handle, curr_epo + 1))
         return curr_epo + 1
+
+    @property
+    def batch_per_epoch(self):
+        val = ctypes.c_int()
+        check_call(_LIB.MXKVStoreGetBatchPerEpoch(self.handle, ctypes.byref(val)))
+        return val.value
+
+
 
     def save_optimizer_states(self, fname, dump_optimizer=False):
         """Saves the optimizer (updater) state to a file. This is often used when checkpointing
@@ -625,6 +637,76 @@ class KVStore(object):
         [[ 6.  6.  6.]
         [ 6.  6.  6.]]
         """
+        # this is a server or singal machine
+        if self._global_batch_size == None and self._updater != None:
+            self._global_batch_size = self._updater.optimizer.global_batch_size
+        if self._updater == None:
+            print("server updater is None")
+            self._num_workers_for_updater = 1
+            if self._step_epoch == None:
+                if isinstance(updater.optimizer.lr_scheduler.step, list):
+                    self._step_epoch = [round(step / updater.optimizer.epoch_size) for step in updater.optimizer.lr_scheduler.step]
+                else:
+                    self._step_epoch = [round(step / updater.optimizer.epoch_size)]
+                print(self._step_epoch)
+        else:
+            if self._num_workers_for_updater < self.num_workers:
+                print("server updater is not None, another orig worker overwrite this")
+                self._num_workers_for_updater += 1
+                return
+            else:
+                print("server updater is not None! new worker comes in")
+            # if self._num_workers_for_updater == None:
+                # self._num_workers_for_updater = self.num_workers
+            # print(self._updater.optimizer.epoch_size)
+            if self._updater.optimizer.epoch_size == None:
+                if isinstance(updater.optimizer.lr_scheduler.step, list):
+                    for i in range(len(self._updater.optimizer.lr_scheduler.step)):
+                        self._updater.optimizer.lr_scheduler.step[i] *= self._num_workers_for_updater / float(self._num_workers_for_updater + 1)
+                        # updater.optimizer.lr_scheduler.step[i] = self._updater.optimizer.lr_scheduler.step[i]
+                else:
+                    self._updater.optimizer.lr_scheduler.step *= self._num_workers_for_updater / float(self._num_workers_for_updater + 1)
+                    # updater.optimizer.lr_scheduler.step = self._updater.optimizer.lr_scheduler.step
+                
+                self._updater.optimizer.num_update *= self._num_workers_for_updater / float(self._num_workers_for_updater + 1)
+                for i in range(len(self._updater.optimizer._index_update_count)):
+                    self._updater.optimizer._index_update_count[i] *= self._num_workers_for_updater / float(self._num_workers_for_updater + 1)
+            else:
+                if isinstance(updater.optimizer.lr_scheduler.step, list):
+                    for i in range(len(self._updater.optimizer.lr_scheduler.step)):
+                        orig_step = self._updater.optimizer.lr_scheduler.step[i]
+                        batch_per_epoch = self._updater.optimizer.epoch_size
+                        curr_epoch = self.epoch + 2
+
+                        if self._updater.optimizer.num_update > orig_step:
+                            new_step = orig_step
+                        else:
+                            new_step = orig_step + (self._step_epoch[i] - curr_epoch) * (updater.optimizer.epoch_size - self._updater.optimizer.epoch_size)
+                            # new_step = orig_step - (self._step_epoch[i] - curr_epoch) * batch_per_epoch / float(self._num_workers_for_updater + 1)
+                            # new_step = curr_epoch * batch_per_epoch + (orig_step - curr_epoch * batch_per_epoch) * self._num_workers_for_updater / float(self._num_workers_for_updater + 1)
+                        updater.optimizer.lr_scheduler.step[i] = new_step
+                        print("orig_step:{}, batch_per_epoch:{}, new batch_per_epoch:{}, curr_epoch:{}, new_step:{}".format(orig_step, batch_per_epoch, updater.optimizer.epoch_size, curr_epoch, new_step))
+                else:
+                    orig_step = self._updater.optimizer.lr_scheduler.step
+                    batch_per_epoch = self._updater.optimizer.epoch_size
+                    curr_epoch = self.epoch + 2
+                    if self._updater.optimizer.num_update > orig_step:
+                        new_step = orig_step
+                    else:
+                        new_step = orig + (self._step_epoch[0] - curr_epoch) * (updater.optimizer.epoch_size - self._updater.optimizer.epoch_size)
+                        # new_step = orig_step - (self._step_epoch[0] - curr_epoch) * batch_per_epoch / float(self._num_workers_for_updater + 1)
+                        # new_step = curr_epoch * batch_per_epoch + (orig_step - curr_epoch * batch_per_epoch) * self._num_workers_for_updater / float(self._num_workers_for_updater + 1)
+                    updater.optimizer.lr_scheduler.step = new_step
+                    print("orig_step:{}, batch_per_epoch:{}, new batch_per_epoch:{}, curr_epoch:{}, new_step:{}".format(orig_step, batch_per_epoch, updater.optimizer.epoch_size, curr_epoch, new_step))
+                
+            updater.optimizer.num_update = self._updater.optimizer.num_update
+            updater.optimizer._index_update_count = self._updater.optimizer._index_update_count
+            # self._updater.optimizer.epoch_size *= self._num_workers_for_updater / float(self._num_workers_for_updater + 1)
+            self._num_workers_for_updater += 1
+            
+
+            
+
         self._updater = updater
         # set updater with int keys
         _updater_proto = ctypes.CFUNCTYPE(
