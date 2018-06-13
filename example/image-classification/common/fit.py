@@ -203,13 +203,17 @@ def fit(args, network, data_loader, **kwargs):
     else:
         nworkers = 1
     epoch_size = args.num_examples / args.batch_size / nworkers
+    
     optimizer_params = {
         'learning_rate': lr,
         'wd': args.wd,
         'lr_scheduler': lr_scheduler,
         'multi_precision': True,
-        'updates_per_epoch' : epoch_size,
-        'global_batch_size' : args.batch_size * nworkers}
+        'updates_per_epoch' : epoch_size}
+    try:
+        optimizer_params['global_batch_size'] = int(os.environ['MXNET_GBS'])
+    except KeyError as e:
+        optimizer_params['global_batch_size'] = args.batch_size * nworkers
 
     # Only a limited number of optimizers have 'momentum' property
     has_momentum = {'sgd', 'dcasgd', 'nag'}

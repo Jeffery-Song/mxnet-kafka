@@ -534,6 +534,7 @@ class BaseModule(object):
                 # a started worker finds out new worker
                 self.logger.info("should change data iter here")
                 # now the batch-size should be changed to global_batch_size / nworker
+                self.logger.info("gbs {},change batch_size to {}".format(optimizer_params['global_batch_size'], int(optimizer_params['global_batch_size'] / kvstore.num_workers)))
                 args_for_change_data.batch_size = int(optimizer_params['global_batch_size'] / kvstore.num_workers)
                 (train_data, eval_data) = data_loader(args_for_change_data, kvstore)
                 if isinstance(optimizer_params['lr_scheduler'].step, list):
@@ -553,6 +554,7 @@ class BaseModule(object):
                 prog += ' export DMLC_ROLE=worker;'
                 prog += ' export DYNAMIC_ADD_NODE=true;'
                 prog += ' export MXNET_CMD="' + os.environ['MXNET_CMD'] + '";'
+                prog += ' export MXNET_GBS=' + str(optimizer_params['global_batch_size']) + ';'
                 prog += ' cd ' + os.environ['MXNET_DIR'] + ';'
                 prog += os.environ['MXNET_CMD']
                 prog += ' --batch-size ' + str(int(optimizer_params['global_batch_size'] / (kvstore.num_workers + 1)))
